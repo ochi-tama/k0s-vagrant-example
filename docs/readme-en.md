@@ -1,28 +1,24 @@
 # k0s-vagrant-example
 
-[English](/docs/readme-en.md)
+Create a k0s cluster with Node-local load balancing and Control plane load balancing on VMs provisioned by vagrant.
 
-vagrantを使って作成したVMでNode-local load balancing と Control plane load balancingを有効化したk0sクラスタを建てる.
+Tested only on a machine with Ubuntu installed.
 
-Ubuntuをインストールしたマシンでのみ動作検証済.
-
-## 必要なもの
+## What you need
 
 - [vagrant](https://developer.hashicorp.com/vagrant/install?product_intent=vagrant)
 - [virrualbox](https://www.virtualbox.org/wiki/Downloads)
 - [k0sctl](https://github.com/k0sproject/k0sctl)
 - [yq](https://github.com/mikefarah/yq)
 
-## 構築方法
+## How to build
 
-必要に応じてVagranfileやk0sctl.ymlは編集する.
+Edit Vagranfile and k0sctl.yml as needed.
 
-```base
-# VMを建てる
+```bash
 vagrant up
-# k0sクラスタを構築する
 SSH_KNOWN_HOSTS=/dev/null k0sctl apply -c k0sctl.yml --trace
-# kubeconfigのアドレスをVIPに置き換える.
+# replace a server address with control plane VIP
 k0sctl kubeconfig | yq '.clusters[0].cluster.server="https://192.168.56.200:6443"' > kubeconfig
 export KUBECONFIG=./kubeconfig
 
@@ -40,27 +36,24 @@ kube-system   metrics-server-7778865875-pbndv   1/1     Running   0          2m1
 kube-system   nllb-server4                      1/1     Running   0          115s
 kube-system   nllb-server5                      1/1     Running   0          115s
 
-## k0sクラスタを削除するとき
+# delete k0s cluster
 SSH_KNOWN_HOSTS=/dev/null k0sctl reset -c k0sctl.yml --trace
-# VMを削除する
 vagrant destroy -f
 
 ```
 
-## 注意
+## Notes
 
-もし上記設定でsshが失敗する場合, ssh-agentが原因の可能性がある.
+If you get public key denined errors, ssh-agent may be the cause.
 
 <https://github.com/k0sproject/k0sctl/issues/142>
 
-上記イシューの通り,
+you may need to
 
-- SSH_AUTH_SOCKをunsetする
-- ssh-addで必要な鍵を全て追加する
+- unset SSH_AUTH_SOCK
+- Add private keys to ssh-agent
 
-で対応できる.
-
-## 参考
+## References
 
 <https://docs.k0sproject.io/stable/k0sctl-install/> | Using k0sctl - Documentation
 

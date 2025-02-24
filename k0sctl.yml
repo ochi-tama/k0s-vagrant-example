@@ -1,0 +1,83 @@
+apiVersion: k0sctl.k0sproject.io/v1beta1
+kind: Cluster
+metadata:
+  name: k0s-cluster
+spec:
+  hosts:
+    - role: controller
+      privateInterface: eth1
+      privateAddress: 192.168.56.2
+      installFlags:
+        - --debug
+      ssh:
+        address: 192.168.56.2
+        user: vagrant
+        port: 22
+        keyPath: /home/tochi/work/k0s-vagrant-example/.vagrant/machines/server-1/virtualbox/private_key
+    - role: controller
+      privateInterface: eth1
+      privateAddress: 192.168.56.3
+      installFlags:
+        - --debug
+      ssh:
+        address: 192.168.56.3
+        user: vagrant
+        port: 22
+        keyPath: /home/tochi/work/k0s-vagrant-example/.vagrant/machines/server-2/virtualbox/private_key
+    - role: controller
+      privateInterface: eth1
+      privateAddress: 192.168.56.4
+      installFlags:
+        - --debug
+      ssh:
+        address: 192.168.56.4
+        user: vagrant
+        port: 22
+        keyPath: /home/tochi/work/k0s-vagrant-example/.vagrant/machines/server-3/virtualbox/private_key
+    - role: worker
+      privateInterface: eth1
+      privateAddress: 192.168.56.5
+      installFlags:
+        - --debug
+      ssh:
+        address: 192.168.56.5
+        user: vagrant
+        port: 22
+        keyPath: /home/tochi/work/k0s-vagrant-example/.vagrant/machines/server-4/virtualbox/private_key
+    - role: worker
+      privateInterface: eth1
+      privateAddress: 192.168.56.6
+      installFlags:
+        - --debug
+      ssh:
+        address: 192.168.56.6
+        user: vagrant
+        port: 22
+        keyPath: /home/tochi/work/k0s-vagrant-example/.vagrant/machines/server-5/virtualbox/private_key
+  k0s:
+    version: v1.32.1+k0s.0
+    dynamicConfig: false
+    config:
+      spec:
+        api:
+          address: 192.168.56.200
+        network:
+          kubeProxy:
+            disabled: false
+          # provider: custom
+          nodeLocalLoadBalancing:
+            enabled: true
+            envoyProxy:
+              apiServerBindPort: 7443
+              konnectivityServerBindPort: 7132
+            type: EnvoyProxy
+          controlPlaneLoadBalancing:
+            enabled: true
+            keepalived:
+              vrrpInstances:
+                - virtualIPs:
+                    - 192.168.56.200/24
+                  authPass: Example
+                  interface: eth1
+        telemetry:
+          enabled: false
